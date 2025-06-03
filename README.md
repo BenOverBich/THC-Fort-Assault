@@ -17,7 +17,11 @@ Fort Assault Robbery is a script for the VORP Framework in Red Dead Redemption 2
 
 ## Configuration
 
-You can find the configuration file at `config.lua`. Here, you can adjust the settings for the Fort assault event, such as NPC spawn locations, assault duration, and the size of the event zone.
+You can find the configuration file at `config.lua`. Here you can adjust settings such as:
+* NPC spawn locations
+* Duration of the assault
+* Reward amount
+* The size and position of the event zone
 
 ## Usage
 
