@@ -26,7 +26,7 @@ AddEventHandler("fortassault:payout", function()
     TriggerEvent('vorp:getCharacter', source, function(user)
         local _source = source
         local _user = user
-        TriggerEvent("vorp:addMoney", source, 0, 100, _user)
+        TriggerEvent("vorp:addMoney", source, 0, Config.RewardMoney, _user)
     end)
-    TriggerClientEvent("vorp:Tip", source, 'The State has sent you a reward: $100', 5000)
+    TriggerClientEvent("vorp:Tip", source, 'The State has sent you a reward: $' .. Config.RewardMoney, 5000)
 end)
