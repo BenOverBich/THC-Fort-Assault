@@ -1,6 +1,7 @@
 local timerCount = Config.RobTime
 local isRobbing, timers = false, false
 local peds = {} -- Store the peds
+local startPrompt
 --Utility Functions
 local function DrawTxt(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
     local str = CreateVarString(10, "LITERAL_STRING", str)
@@ -37,6 +38,18 @@ local function spawnPed(x, y, z)
     Citizen.InvokeNative(0xF166E48407BAC484, ped, PlayerPedId(), 0, 0)
     FreezeEntityPosition(ped, false)
     TaskCombatPed(ped, PlayerPedId(), 0, 16)
+end
+
+local function setupStartPrompt()
+    startPrompt = PromptRegisterBegin()
+    PromptSetControlAction(startPrompt, Config.StartKey)
+    local str = CreateVarString(10, "LITERAL_STRING", Config.RobPrompt)
+    PromptSetText(startPrompt, str)
+    PromptSetEnabled(startPrompt, false)
+    PromptSetVisible(startPrompt, false)
+    PromptSetGroup(startPrompt, GetHashKey("FORTASSAULT"))
+    PromptSetStandardMode(startPrompt, true)
+    PromptRegisterEnd(startPrompt)
 end
 
 --Event Handlers
@@ -90,16 +103,23 @@ end)
 
 --Threads
 Citizen.CreateThread(function()
+    setupStartPrompt()
     while true do
         Citizen.Wait(0)
         local playerPed = PlayerPedId()
         local coords = GetEntityCoords(playerPed)
         if GetDistanceBetweenCoords(coords, Config.AssaultLocation.x, Config.AssaultLocation.y, Config.AssaultLocation.z, true) < Config.ZoneSize then
-            DrawTxt(Config.RobPrompt, 0.17, 0.55, -4.3, 0.3, true, 255, 255, 255, 255, true)
-            if IsControlJustReleased(0, 0xC7B5340A) then
+            PromptSetEnabled(startPrompt, true)
+            PromptSetVisible(startPrompt, true)
+            if Citizen.InvokeNative(0xC92AC953F0A982AE, startPrompt) then
+                PromptSetEnabled(startPrompt, false)
+                PromptSetVisible(startPrompt, false)
                 TriggerServerEvent("fortassault:startRobbing")
                 isRobbing = true
             end
+        else
+            PromptSetEnabled(startPrompt, false)
+            PromptSetVisible(startPrompt, false)
         end
     end
 end)

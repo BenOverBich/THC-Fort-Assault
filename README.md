@@ -26,6 +26,7 @@ You can find the configuration file at `config.lua`. Here you can adjust setting
 ## Usage
 
 Players need the "presidential order" item to start the fort assault event. Once the player is within the specified area and has the required item, they can trigger the event.
+When near the fort a contextual prompt will appear. Hold the specified key to begin the assault.
 
 ## Contribution
 
