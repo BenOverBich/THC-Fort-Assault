@@ -16,7 +16,6 @@ AddEventHandler("fortassault:startRobbing", function()
             TriggerClientEvent('fortassault:startTimer', _source)
             TriggerClientEvent('fortassault:startAnimation', _source)
         else
-            TriggerClientEvent('fortassault:robDenied', _source)
             TriggerClientEvent("vorp:TipBottom", _source, "You need the Presidential Order", 6000)
         end     
     end)

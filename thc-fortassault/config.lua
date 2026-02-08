@@ -7,11 +7,7 @@ Config.RobTime = 300
 Config.ZoneSize = 2.0
 
 -- Prompt text shown when player can start the assault
--- Text shown to players when prompting them to start
-Config.RobPrompt = 'Start the assault'
-
--- Control key used for the start prompt (E by default)
-Config.StartKey = 0xC7B5340A
+Config.RobPrompt = '[~e~Press-Enter~q~] start the assault'
 
 -- World coordinates for the fort assault event
 Config.AssaultLocation = vector3(-4207.02, -3582.37, 49.43)

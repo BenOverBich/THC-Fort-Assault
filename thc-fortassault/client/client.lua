@@ -1,8 +1,6 @@
 local timerCount = Config.RobTime
 local isRobbing, timers = false, false
 local peds = {} -- Store the peds
-local startPrompt
-local promptGroup = GetHashKey("FORTASSAULT")
 --Utility Functions
 local function DrawTxt(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
     local str = CreateVarString(10, "LITERAL_STRING", str)
@@ -41,27 +39,6 @@ local function spawnPed(x, y, z)
     TaskCombatPed(ped, PlayerPedId(), 0, 16)
 end
 
-local function setupStartPrompt()
-    startPrompt = PromptRegisterBegin()
-    PromptSetControlAction(startPrompt, Config.StartKey)
-    local str = CreateVarString(10, "LITERAL_STRING", Config.RobPrompt)
-    PromptSetText(startPrompt, str)
-    PromptSetEnabled(startPrompt, false)
-    PromptSetVisible(startPrompt, false)
-    PromptSetGroup(startPrompt, promptGroup)
-    PromptSetStandardMode(startPrompt, true)
-    PromptRegisterEnd(startPrompt)
-end
-
-local function waitForTimerReady(timeoutMs)
-    local waited = 0
-    while not timers and waited < timeoutMs do
-        Citizen.Wait(100)
-        waited = waited + 100
-    end
-    return timers
-end
-
 --Event Handlers
 RegisterNetEvent('fortassault:startAnimation')
 AddEventHandler('fortassault:startAnimation', function()    
@@ -77,32 +54,22 @@ end)
 
 RegisterNetEvent("fortassault:startTimer")
 AddEventHandler("fortassault:startTimer",function()
-    timerCount = Config.RobTime
-    timers = true
-    isRobbing = true
+	timers = true
     TriggerEvent("fortassault:startCountdown")
     while timers do
-        Citizen.Wait(0)
         DrawTxt("Assault the fort for... " .. timerCount .. " seconds", 0.15, 0.10, 0.3, 0.3, true, 255, 255, 255, 255, true)
         local playerPed = PlayerPedId()
         if IsPlayerDead(playerPed) or GetDistanceBetweenCoords(GetEntityCoords(playerPed), Config.AssaultLocation.x, Config.AssaultLocation.y, Config.AssaultLocation.z, true) > Config.CancelDistance then
             timers = false
         end
-        if timerCount <= 0 then
-            Citizen.Wait(500)
+        if timerCount == 0 or not timers then
+            Citizen.Wait(1000)
             TriggerServerEvent("fortassault:payout")
             for i, ped in ipairs(peds) do
                 DeletePed(ped)
             end
             peds = {}
             timers = false
-            isRobbing = false
-        elseif not timers then
-            for i, ped in ipairs(peds) do
-                DeletePed(ped)
-            end
-            peds = {}
-            isRobbing = false
         end
     end
 end)
@@ -111,9 +78,6 @@ AddEventHandler("fortassault:startCountdown", countdown)
 
 RegisterNetEvent("fortassault:startTheEvent")
 AddEventHandler("fortassault:startTheEvent", function()
-    if not waitForTimerReady(5000) then
-        return
-    end
     for k, v in pairs(Config.NPCSpawns) do
         Citizen.CreateThread(function()
             while timers do
@@ -124,31 +88,18 @@ AddEventHandler("fortassault:startTheEvent", function()
     end
 end)
 
-RegisterNetEvent("fortassault:robDenied")
-AddEventHandler("fortassault:robDenied", function()
-    isRobbing = false
-end)
-
 --Threads
 Citizen.CreateThread(function()
-    setupStartPrompt()
     while true do
         Citizen.Wait(0)
         local playerPed = PlayerPedId()
         local coords = GetEntityCoords(playerPed)
-        if not isRobbing and GetDistanceBetweenCoords(coords, Config.AssaultLocation.x, Config.AssaultLocation.y, Config.AssaultLocation.z, true) < Config.ZoneSize then
-            PromptSetActiveGroupThisFrame(promptGroup, CreateVarString(10, "LITERAL_STRING", Config.RobPrompt))
-            PromptSetEnabled(startPrompt, true)
-            PromptSetVisible(startPrompt, true)
-            if Citizen.InvokeNative(0xC92AC953F0A982AE, startPrompt) then
-                PromptSetEnabled(startPrompt, false)
-                PromptSetVisible(startPrompt, false)
+        if GetDistanceBetweenCoords(coords, Config.AssaultLocation.x, Config.AssaultLocation.y, Config.AssaultLocation.z, true) < Config.ZoneSize then
+            DrawTxt(Config.RobPrompt, 0.17, 0.55, -4.3, 0.3, true, 255, 255, 255, 255, true)
+            if IsControlJustReleased(0, 0xC7B5340A) then
                 TriggerServerEvent("fortassault:startRobbing")
                 isRobbing = true
             end
-        else
-            PromptSetEnabled(startPrompt, false)
-            PromptSetVisible(startPrompt, false)
         end
     end
 end)
